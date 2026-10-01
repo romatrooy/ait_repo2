@@ -30,7 +30,7 @@ import { EmptyState, ErrorState, SlotGridSkeleton } from './components/States';
 import { Toast, type ToastMessage } from './components/Toast';
 import { WeekBar } from './components/WeekBar';
 
-const DEFAULT_ACCENT = '#3b5bdb';
+const DEFAULT_ACCENT = '#7c3aed';
 
 export function App() {
   const todayDate = today();

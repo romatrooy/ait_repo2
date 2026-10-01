@@ -162,7 +162,7 @@ code {
    с того элемента, где написано объявление: будь производные цвета объявлены
    в :root, они считались бы от значения по умолчанию и не менялись бы. */
 .app {
-  --accent: #3b5bdb;
+  --accent: #7c3aed;
   --accent-ink: color-mix(in oklab, var(--accent) 86%, #000 14%);
   --accent-soft: color-mix(in oklab, var(--accent) 7%, var(--surface));
   --accent-line: color-mix(in oklab, var(--accent) 34%, var(--border));
