@@ -293,3 +293,5 @@ docs/ontology.md              доменная модель
 | Хочется начать с чистой базы | удалите файл `booking.db` и снова выполните `npm run seed` |
 | `npm run e2e` жалуется, что не найден `server/dist` | сначала выполните `npm run build` |
 | Playwright просит браузер | выполните `npx playwright install chromium` |
+
+некоторые изменения
