@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+# pre-commit hook: запускается автоматически перед созданием коммита.
+# Если скрипт завершается с ненулевым кодом, коммит отменяется.
+#
+# Порядок проверок важен: самые дешёвые идут первыми, чтобы быстро
+# отказывать в плохих коммитах и не тратить время зря.
+#
+# Чтобы обойти хук (не рекомендуется): git commit --no-verify
+
+set -e
+
+# Перейти в корень репозитория, даже если хук вызван из подпапки.
+cd "$(git rev-parse --show-toplevel)"
+
+echo "→ pre-commit: проверка запрещённых файлов"
+node ./scripts/forbid-staged.mjs
+
+STAGED=$(git diff --cached --name-only)
+
+# Если в индексе вообще ничего нет — выходим чисто.
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
+echo "→ pre-commit: проверка форматирования (prettier)"
+node ./scripts/prettier-staged.mjs
+
+echo "→ pre-commit: обновление CHANGELOG.md"
+node ./scripts/check-changelog.mjs
+
+echo "→ pre-commit: проверка синхронности package.json и package-lock.json"
+node ./scripts/check-lockfile-sync.mjs
+
+echo "→ pre-commit: проверка синхронности contract/main.tsp и contract/openapi.yaml"
+node ./scripts/check-contract-sync.mjs
+
+echo "→ pre-commit: typecheck по изменённым воркспейсам"
+node ./scripts/typecheck-staged.mjs
+
+echo "✓ pre-commit: все проверки пройдены"
