@@ -27,7 +27,7 @@
     "hooks:install": "git config core.hooksPath hooks && node scripts/install-hooks.mjs",
     "hooks:uninstall": "git config --unset core.hooksPath",
     "changelog": "node scripts/check-changelog.mjs",
-    "prepare": "node scripts/install-hooks.mjs"
+    "prepare": "node --input-type=module -e \"import('node:fs').then((fs) => { if (fs.existsSync('./scripts/install-hooks.mjs')) { import('./scripts/install-hooks.mjs'); } else { console.log('install-hooks.mjs not present, skipping prepare'); } })\""
   },
   "devDependencies": {
     "conventional-changelog": "5.0.0",
