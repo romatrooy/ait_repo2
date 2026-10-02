@@ -1,0 +1,88 @@
+#!/usr/bin/env sh
+# commit-msg hook: проверяет сообщение коммита в формате Conventional Commits.
+# Аргумент $1 — путь к временному файлу с текстом сообщения.
+#
+# Формат первой строки:
+#   <type>(<scope>): <subject>
+#   <type>: <subject>
+#
+# Допустимые type (и куда попадают в CHANGELOG):
+#   feat     → Новое
+#   fix      → Исправления
+#   docs     → Документация
+#   chore    → (в CHANGELOG не попадает)
+#   style    → (в CHANGELOG не попадает)
+#   refactor → (в CHANGELOG не попадает)
+#   test     → (в CHANGELOG не попадает)
+#   build    → (в CHANGELOG не попадает)
+#   ci       → (в CHANGELOG не попадает)
+#   perf     → Исправления
+#
+# Полный список см. https://www.conventionalcommits.org/ru/
+#
+# Чтобы обойти: git commit --no-verify
+
+set -e
+
+MSG_FILE="$1"
+FIRST_LINE=$(head -n 1 "$MSG_FILE")
+
+# Пустое сообщение уже отсекает сам git. На всякий случай проверим.
+if [ -z "$FIRST_LINE" ]; then
+  echo "✗ commit-msg: сообщение коммита пустое" >&2
+  exit 1
+fi
+
+LEN=${#FIRST_LINE}
+if [ "$LEN" -gt 100 ]; then
+  echo "✗ commit-msg: первая строка длиннее 100 символов ($LEN). Сократите заголовок." >&2
+  exit 1
+fi
+
+# Извлекаем тип: всё до первого пробела или открывающей скобки.
+# Примеры: "feat: ..." → "feat", "fix(api): ..." → "fix", "Update docs" → "Update".
+TYPE=$(echo "$FIRST_LINE" | sed -nE 's/^([a-zA-Z]+)(\([^)]+\))?: .*/\1/p')
+
+if [ -z "$TYPE" ]; then
+  echo "✗ commit-msg: сообщение не в формате Conventional Commits." >&2
+  echo "  Ожидается: <type>: <subject> или <type>(<scope>): <subject>" >&2
+  echo "  Пример:    feat: добавить выбор даты в календаре" >&2
+  echo "  Список типов: feat, fix, docs, chore, refactor, test, build, ci, perf, style" >&2
+  exit 1
+fi
+
+# Проверяем, что тип — известный.
+case "$TYPE" in
+  feat|fix|docs|chore|style|refactor|test|build|ci|perf|revert)
+    ;;
+  *)
+    echo "✗ commit-msg: неизвестный тип «$TYPE»." >&2
+    echo "  Допустимые: feat, fix, docs, chore, style, refactor, test, build, ci, perf, revert" >&2
+    exit 1
+    ;;
+esac
+
+# После "<type>:" или "<type>(scope):" должен идти пробел и непустой subject.
+# Отрезаем тип + ":". Учитываем опциональный (scope).
+SUBJECT=$(echo "$FIRST_LINE" | sed -nE "s/^${TYPE}(\\([^)]+\\))?: //p")
+if [ -z "$SUBJECT" ]; then
+  echo "✗ commit-msg: после «${TYPE}:» должно идти описание изменений." >&2
+  exit 1
+fi
+
+# Запрет точки в конце subject — это требование Conventional Commits.
+case "$SUBJECT" in
+  *.)
+    echo "✗ commit-msg: subject не должен заканчиваться точкой." >&2
+    exit 1
+    ;;
+esac
+
+# Запрет длинного тире (em-dash) в русских текстах — правило из AGENTS.md.
+# Conventional Commits разрешают только дефис.
+if echo "$FIRST_LINE" | grep -q '—'; then
+  echo "✗ commit-msg: длинное тире (—) в сообщении запрещено. Используйте дефис (-)." >&2
+  exit 1
+fi
+
+exit 0

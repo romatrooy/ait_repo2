@@ -1,0 +1,17 @@
+# Сгенерированные и служебные файлы — prettier их не трогает и не проверяет.
+node_modules/
+dist/
+booking.db
+booking.db-wal
+booking.db-shm
+contract/openapi.yaml
+e2e/test-results/
+e2e/playwright-report/
+package-lock.json
+
+# Хуки лежат в shell-скриптах, у prettier нет парсера для sh.
+hooks/pre-commit
+hooks/commit-msg
+
+# CHANGELOG.md форматируется conventional-changelog, prettier его не трогает.
+CHANGELOG.md
