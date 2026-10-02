@@ -323,6 +323,62 @@ docs/adr/                     архитектурные решения
 docs/pdr/                     продуктовое решение
 docs/ontology.md              доменная модель
 .github/workflows/ci.yml      проверка кода в GitHub Actions
+.github/workflows/publish-image.yml   сборка и публикация Docker-образа
+```
+
+## Готовый образ из GitHub Container Registry
+
+Каждый коммит в `main` автоматически собирается и публикуется в
+[GitHub Container Registry](https://github.com/romatrooy/ait_repo2/pkgs/container/ait_repo2).
+Теги: `latest` (последний коммит в `main`) и короткий SHA коммита.
+
+Запуск без сборки — одна команда:
+
+```bash
+docker run --rm -p 8000:8000 --name booking ghcr.io/romatrooy/ait_repo2:latest
+```
+
+На Windows / Mac контейнер должен быть на той же архитектуре, что и хост.
+Образ публикуется сразу под две платформы (`linux/amd64` и `linux/arm64`),
+поэтому Docker сам выберет подходящую. Если контейнер не запускается на
+Apple Silicon — явно укажите архитектуру:
+
+```bash
+docker run --rm --platform=linux/amd64 -p 8000:8000 ghcr.io/romatrooy/ait_repo2:latest
+```
+
+С томом для базы данных (брони не пропадут между перезапусками):
+
+```bash
+docker volume create booking-data
+docker run --rm -d --name booking -p 8000:8000 \
+  -v booking-data:/data \
+  ghcr.io/romatrooy/ait_repo2:latest
+```
+
+Через `docker compose` — `docker-compose.yml` придётся подправить, чтобы
+вместо `build:` использовать `image:`:
+
+```yaml
+services:
+  booking:
+    image: ghcr.io/romatrooy/ait_repo2:latest # вместо build: .
+    ports:
+      - '8000:8000'
+    volumes:
+      - booking-data:/data
+    command: sh -c "node server/dist/seed.js && node server/dist/index.js"
+    restart: unless-stopped
+
+volumes:
+  booking-data:
+```
+
+Конкретная версия (например, для отладки):
+
+```bash
+docker pull ghcr.io/romatrooy/ait_repo2:6ce609a
+docker run --rm -p 8000:8000 ghcr.io/romatrooy/ait_repo2:6ce609a
 ```
 
 ## Если что-то не завелось
