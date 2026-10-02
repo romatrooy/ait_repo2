@@ -1,15 +1,19 @@
-# Поднять сервис одной командой:
+# Запуск готового образа из GitHub Container Registry.
 #
-#     docker compose up -d --build   # собрать из исходников (для разработки)
+#     docker compose -f docker-compose.prod.yml up -d
 #
-# Для запуска готового образа из GitHub Container Registry используется
-# отдельный compose-файл — см. docker-compose.prod.yml.
+# ВАЖНО: не подменяет локальный docker-compose.yml — используется параллельно.
+# Образ публикуется автоматически при каждом merge в main, см.
+# .github/workflows/publish-image.yml.
 #
-# Интерфейс откроется по адресу http://localhost:8000
+# Заменить тег можно через переменную BOOKING_IMAGE:
+#
+#     BOOKING_IMAGE=ghcr.io/romatrooy/ait_repo2:6ce609a \
+#       docker compose -f docker-compose.prod.yml up -d
 
 services:
   booking:
-    build: .
+    image: ${BOOKING_IMAGE:-ghcr.io/romatrooy/ait_repo2:latest}
     container_name: booking-reference
     ports:
       - '8000:8000'
@@ -17,7 +21,7 @@ services:
       BOOKING_DB_FILE: /data/booking.db
     volumes:
       # Именованный том: брони не теряются при пересоздании контейнера.
-      - booking-data:/data # открыть Docker Desktop -> Volumes и найти наш volume
+      - booking-data:/data
     # Сначала наполняем базу демонстрационными данными, потом запускаем сервис.
     # Скрипт наполнения идемпотентный: на непустой базе он ничего не меняет.
     command: sh -c "node server/dist/seed.js && node server/dist/index.js"
