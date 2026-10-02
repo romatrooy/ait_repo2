@@ -154,6 +154,11 @@ npm run contract:build
 Если нужно прогнать все проверки, не делая коммит, — `npm run typecheck`
 и `npm run format:check`.
 
+Если хотите заранее увидеть, что попадёт в `CHANGELOG.md` (без коммита),
+запустите `npm run changelog`. Скрипт перепишет файл и добавит его в
+индекс — это удобно, чтобы посмотреть результат через `git diff --cached`
+и при необходимости откатить через `git restore --staged CHANGELOG.md`.
+
 ## 7. CHANGELOG и Conventional Commits
 
 `CHANGELOG.md` генерируется автоматически перед каждым коммитом из

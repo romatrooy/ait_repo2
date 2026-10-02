@@ -26,6 +26,7 @@
     "format:check": "prettier --check .",
     "hooks:install": "git config core.hooksPath hooks && node scripts/install-hooks.mjs",
     "hooks:uninstall": "git config --unset core.hooksPath",
+    "changelog": "node scripts/check-changelog.mjs",
     "prepare": "node scripts/install-hooks.mjs"
   },
   "devDependencies": {
