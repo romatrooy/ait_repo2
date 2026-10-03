@@ -15,13 +15,13 @@ jobs:
         with: { node-version: "22", cache: npm }
       - run: npm ci
       - run: npm test
-      - run: npx tsx scripts/changelog.ts > CHANGELOG.md
+      - run: node scripts/changelog.mjs > CHANGELOG.md
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ github.token }}
-      - uses: docker/build-push-action@v6
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
         with:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
