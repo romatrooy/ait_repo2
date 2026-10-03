@@ -39,6 +39,14 @@ jobs:
       - name: Забрать код
         uses: actions/checkout@v4
 
+      - name: Настроить buildx
+        # GitHub-hosted runners по умолчанию используют «docker» driver,
+        # который не поддерживает multi-platform build и экспорт кэша.
+        # Переключаемся на «docker-container» с BuildKit.
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: image=moby/buildkit:v0.20.2
+
       - name: Войти в GHCR
         uses: docker/login-action@v3
         with:
@@ -66,7 +74,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false #greenegger не работает в GHCR без opt-in
           # Кэш слоёв ускоряет повторные сборки.
-          # Только чтение: запись в --cache-to требует BuildKit driver,
-          # а на GitHub-hosted runners по умолчанию используется docker driver,
-          # который не поддерживает экспорт кэша.
           cache-from: type=gha
+          cache-to: type=gha,mode=max
