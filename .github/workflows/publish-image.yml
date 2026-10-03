@@ -66,5 +66,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false #greenegger не работает в GHCR без opt-in
           # Кэш слоёв ускоряет повторные сборки.
+          # Только чтение: запись в --cache-to требует BuildKit driver,
+          # а на GitHub-hosted runners по умолчанию используется docker driver,
+          # который не поддерживает экспорт кэша.
           cache-from: type=gha
-          cache-to: type=gha,mode=max
